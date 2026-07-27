@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <script>
+// 登录校验：没有登录自动跳转到登录页
+let token = localStorage.getItem("token") || sessionStorage.getItem("token");
+let userId = localStorage.getItem("userId") || sessionStorage.getItem("userId");
+if (!token || !userId) {
+    location.href = "login.html";
+}
+// 退出登录函数
+function logoutAccount() {
+    localStorage.clear();
+    sessionStorage.clear();
+    location.href = "login.html";
+}
+</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🐶宠物喂养打卡</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="page-header">
+    <h1>宠物喂养打卡</h1>
+    <button onclick="logoutAccount()" style="padding:7px 12px;background:#ff6b6b;color:white;border:none;border-radius:8px;cursor:pointer;">退出登录</button>
+    <p class="desc">两只毛孩子吃饭、便便专属记录本</p>
+</div>
+
+  <section class="dog-card-wrap">
+    <h2>📋 宠物档案</h2>
+    <div id="dogList"></div>
+  </section>
+
+  <section class="search-area">
+    <h2>🐾 狗狗快速筛选</h2>
+    <select id="breedFilter">
+      <option value="all">全部品种</option>
+      <option value="中华田园犬">中华田园犬</option>
+      <option value="柯基">柯基</option>
+      <option value="哈士奇">哈士奇</option>
+      <option value="比熊">比熊</option>
+      <option value="金毛">金毛</option>
+      <option value="拉布拉多">拉布拉多</option>
+      <option value="泰迪/贵宾">泰迪/贵宾</option>
+      <option value="柴犬">柴犬</option>
+      <option value="萨摩耶">萨摩耶</option>
+      <option value="边牧">边境牧羊犬</option>
+      <option value="法斗">法斗</option>
+      <option value="英斗">英斗</option>
+      <option value="博美">博美</option>
+      <option value="雪纳瑞">雪纳瑞</option>
+      <option value="约克夏">约克夏</option>
+      <option value="巴哥">巴哥</option>
+      <option value="腊肠犬">腊肠犬</option>
+      <option value="小鹿犬">小鹿犬</option>
+      <option value="古牧">古牧</option>
+      <option value="阿拉斯加">阿拉斯加</option>
+      <option value="秋田">秋田</option>
+      <option value="其他">其他</option>
+    </select>
+    <span>⚖️体重筛选：</span>
+    <input type="text" id="weightMin" placeholder="最低体重(kg)">
+    ~
+    <input type="text" id="weightMax" placeholder="最高体重(kg)">
+    <button id="dogFilterBtn">🔍筛选狗狗</button>
+    <button id="resetDogFilter">🔄重置筛选</button>
+  </section>
+
+  <div id="editModal" class="modal">
+    <div class="modal-box">
+      <h3>✏️ 修改宠物资料</h3>
+      <form id="editDogForm">
+        <input type="hidden" name="id">
+        <input type="text" name="name" placeholder="狗狗名字" required>
+        <select name="breed" required>
+          <option value="">选择狗狗品种</option>
+          <option value="中华田园犬">中华田园犬（小土狗）</option>
+          <option value="柯基">柯基</option>
+          <option value="哈士奇">哈士奇</option>
+          <option value="比熊">比熊</option>
+          <option value="金毛">金毛</option>
+          <option value="拉布拉多">拉布拉多</option>
+          <option value="泰迪/贵宾">泰迪/贵宾</option>
+          <option value="柴犬">柴犬</option>
+          <option value="萨摩耶">萨摩耶</option>
+          <option value="边牧">边境牧羊犬</option>
+          <option value="法斗">法国斗牛犬</option>
+          <option value="英斗">英国斗牛犬</option>
+          <option value="博美">博美</option>
+          <option value="雪纳瑞">雪纳瑞</option>
+          <option value="约克夏">约克夏</option>
+          <option value="巴哥">巴哥</option>
+          <option value="腊肠犬">腊肠犬</option>
+          <option value="小鹿犬">小鹿犬</option>
+          <option value="古牧">古代牧羊犬</option>
+          <option value="阿拉斯加">阿拉斯加</option>
+          <option value="秋田">秋田犬</option>
+          <option value="其他">其他品种（自行填写）</option>
+        </select>
+        <input type="number" name="age" placeholder="年龄" required min="0">
+        <input type="date" name="birthday" required>
+        <input type="text" name="weight" placeholder="体重，例：9kg" required>
+        <textarea name="vaccine" placeholder="疫苗备注"></textarea>
+        <div class="modal-btn-group">
+          <button type="submit">✅保存修改</button>
+          <button type="button" id="closeModal">❌取消</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="card card-dog1">
+      <h3>🐶 <span id="dog1Name">大熊</span> 喂养打卡</h3>
+      <p class="sub-tip">🍚干饭 / 💩便便分开填写</p>
+      <h4>🍲 干饭记录</h4>
+      <form id="eatForm1">
+        <input type="hidden" name="dogId">
+        <input type="hidden" name="dogName">
+        <input type="date" name="date" required placeholder="选择日期">
+
+        <!-- 新增：用餐时段 早午晚餐 -->
+        <div class="meal-select-wrap">
+          <p>🍽️ 用餐时段</p>
+          <div class="meal-row">
+            <label><input type="radio" name="meal" value="早餐" required> 🌅早餐</label>
+            <label><input type="radio" name="meal" value="午餐"> ☀️午餐</label>
+            <label><input type="radio" name="meal" value="晚餐"> 🌙晚餐</label>
+          </div>
+        </div>
+
+        <div class="mood-select-wrap">
+          <p>😊 今日心情</p>
+          <div class="mood-row">
+            <label><input type="radio" name="mood" value="开心" required> 😊 开心</label>
+            <label><input type="radio" name="mood" value="一般"> 😐 一般</label>
+            <label><input type="radio" name="mood" value="没胃口"> 😔 没胃口</label>
+            <label><input type="radio" name="mood" value="不舒服"> 🤒 不舒服</label>
+          </div>
+        </div>
+
+        <div class="food-checkbox-wrap">
+          <p>🥩勾选进食食材（可多选）</p>
+          <div class="checkbox-row">
+            <label><input type="checkbox" class="food-check" value="狗粮">狗粮</label>
+            <label><input type="checkbox" class="food-check" value="米饭">米饭</label>
+            <label><input type="checkbox" class="food-check" value="鸡肉">鸡肉</label>
+            <label><input type="checkbox" class="food-check" value="牛肉">牛肉</label>
+          </div>
+          <div class="checkbox-row">
+            <label><input type="checkbox" class="food-check" value="猪肉">猪肉</label>
+            <label><input type="checkbox" class="food-check" value="鸡蛋">鸡蛋</label>
+            <label><input type="checkbox" class="food-check" value="南瓜">南瓜</label>
+            <label><input type="checkbox" class="food-check" value="胡萝卜">胡萝卜</label>
+          </div>
+          <div class="checkbox-row">
+            <label><input type="checkbox" class="food-check" value="青菜">青菜</label>
+            <label><input type="checkbox" class="food-check" value="罐头">罐头</label>
+            <label><input type="checkbox" class="food-check" value="其他">其他</label>
+          </div>
+        </div>
+        <input type="hidden" name="food" id="foodInput1">
+
+        <!-- 天气横向布局，和心情完全同款 -->
+        <div class="weather-select-wrap">
+          <p>🌤️ 当日天气</p>
+          <div class="weather-row">
+            <label><input type="radio" name="weather" value="晴天" required> ☀️晴天</label>
+            <label><input type="radio" name="weather" value="阴天"> ⛅阴天</label>
+            <label><input type="radio" name="weather" value="雨天"> 🌧️雨天</label>
+            <label><input type="radio" name="weather" value="大风"> 💨大风</label>
+            <label><input type="radio" name="weather" value="寒冷"> ❄️寒冷</label>
+          </div>
+        </div>
+
+        <textarea name="note" placeholder="喂食备注（选填）"></textarea>
+        <button type="submit">🧡提交喂食</button>
+      </form>
+
+      <h4>💩 排便记录</h4>
+      <form id="poopForm1">
+        <input type="hidden" name="dogId">
+        <input type="hidden" name="dogName">
+        <input type="date" name="date" required>
+        <input type="number" min="1" name="count" placeholder="排便次数">
+        <select name="status" required>
+          <option value="正常">正常</option>
+          <option value="软便">软便</option>
+          <option value="拉稀">拉稀</option>
+          <option value="干硬">干硬便秘</option>
+          <option value="带血">带血异常</option>
+        </select>
+        <textarea name="note" placeholder="肠胃备注"></textarea>
+        <button type="submit">🧡提交排便</button>
+      </form>
+    </div>
+
+    <div class="card card-dog2">
+      <h3>🐩 <span id="dog2Name">花卷</span> 喂养打卡</h3>
+      <p class="sub-tip">🍚干饭 / 💩便便分开填写</p>
+      <h4>🍲 干饭记录</h4>
+      <form id="eatForm2">
+        <input type="hidden" name="dogId">
+        <input type="hidden" name="dogName">
+        <input type="date" name="date" required>
+
+        <!-- 用餐时段 -->
+        <div class="meal-select-wrap">
+          <p>🍽️ 用餐时段</p>
+          <div class="meal-row">
+            <label><input type="radio" name="meal" value="早餐" required> 🌅早餐</label>
+            <label><input type="radio" name="meal" value="午餐"> ☀️午餐</label>
+            <label><input type="radio" name="meal" value="晚餐"> 🌙晚餐</label>
+          </div>
+        </div>
+
+        <div class="mood-select-wrap">
+          <p>😊 今日心情</p>
+          <div class="mood-row">
+            <label><input type="radio" name="mood" value="开心" required> 😊 开心</label>
+            <label><input type="radio" name="mood" value="一般"> 😐 一般</label>
+            <label><input type="radio" name="mood" value="没胃口"> 😔 没胃口</label>
+            <label><input type="radio" name="mood" value="不舒服"> 🤒 不舒服</label>
+          </div>
+        </div>
+
+        <div class="food-checkbox-wrap">
+          <p>🥩勾选进食食材（可多选）</p>
+          <div class="checkbox-row">
+            <label><input type="checkbox" class="food-check" value="狗粮">狗粮</label>
+            <label><input type="checkbox" class="food-check" value="米饭">米饭</label>
+            <label><input type="checkbox" class="food-check" value="鸡肉">鸡肉</label>
+            <label><input type="checkbox" class="food-check" value="牛肉">牛肉</label>
+          </div>
+          <div class="checkbox-row">
+            <label><input type="checkbox" class="food-check" value="猪肉">猪肉</label>
+            <label><input type="checkbox" class="food-check" value="鸡蛋">鸡蛋</label>
+            <label><input type="checkbox" class="food-check" value="南瓜">南瓜</label>
+            <label><input type="checkbox" class="food-check" value="胡萝卜">胡萝卜</label>
+          </div>
+          <div class="checkbox-row">
+            <label><input type="checkbox" class="food-check" value="青菜">青菜</label>
+            <label><input type="checkbox" class="food-check" value="罐头">罐头</label>
+            <label><input type="checkbox" class="food-check" value="其他">其他</label>
+          </div>
+        </div>
+        <input type="hidden" name="food" id="foodInput2">
+
+        <!-- 横向天气 -->
+        <div class="weather-select-wrap">
+          <p>🌤️ 当日天气</p>
+          <div class="weather-row">
+            <label><input type="radio" name="weather" value="晴天" required> ☀️晴天</label>
+            <label><input type="radio" name="weather" value="阴天"> ⛅阴天</label>
+            <label><input type="radio" name="weather" value="雨天"> 🌧️雨天</label>
+            <label><input type="radio" name="weather" value="大风"> 💨大风</label>
+            <label><input type="radio" name="weather" value="寒冷"> ❄️寒冷</label>
+          </div>
+        </div>
+
+        <textarea name="note" placeholder="喂食备注（选填）"></textarea>
+        <button type="submit">💜提交喂食</button>
+      </form>
+
+      <h4>💩 排便记录</h4>
+      <form id="poopForm2">
+        <input type="hidden" name="dogId">
+        <input type="hidden" name="dogName">
+        <input type="date" name="date" required>
+        <input type="number" min="1" name="count" placeholder="排便次数">
+        <select name="status" required>
+          <option value="正常">正常</option>
+          <option value="软便">软便</option>
+          <option value="拉稀">拉稀</option>
+          <option value="干硬">干硬便秘</option>
+          <option value="带血">带血异常</option>
+        </select>
+        <textarea name="note" placeholder="肠胃备注"></textarea>
+        <button type="submit">💜提交排便</button>
+      </form>
+    </div>
+  </div>
+
+  <section class="search-area">
+    <h2>📅 全部历史记录日历查询</h2>
+    <input type="date" id="searchDate">
+    <button id="searchBtn">📆查询当日记录</button>
+    <button id="showAll">📖查看全部记录</button>
+  </section>
+
+  <div class="record-box">
+    <h3>🍽️ 全犬饮食记录清单</h3>
+    <div id="eatList"></div>
+  </div>
+  <div class="record-box">
+    <h3>💩 全犬排便记录清单</h3>
+    <div id="poopList"></div>
+  </div>
+</div>
+<script src="main.js"></script>
+</body>
+</html>

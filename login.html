@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>宠物管理系统 - 登录</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft Yahei", sans-serif;
+        }
+        body {
+            background-color: #FFF0F8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .login-box {
+            width: 380px;
+            background: #ffffff;
+            padding: 35px 30px;
+            border-radius: 16px;
+            box-shadow: 0 4px 15px #f8d2e6;
+        }
+        h2 {
+            text-align: center;
+            color: #c75b9a;
+            margin-bottom: 26px;
+        }
+        .form-item {
+            margin-bottom: 18px;
+        }
+        .form-item label {
+            display: block;
+            font-size: 15px;
+            color: #444;
+            margin-bottom: 6px;
+        }
+        .form-item input {
+            width: 100%;
+            height: 42px;
+            padding: 0 14px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+        }
+        .remember-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin: 10px 0 20px;
+        }
+        #login-submit {
+            width: 100%;
+            height: 44px;
+            background-color: #c75b9a;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        #login-submit:hover {
+            background-color: #b04e87;
+        }
+        .jump-tip {
+            text-align: center;
+            margin-top: 16px;
+            font-size: 14px;
+            color: #666;
+        }
+        .jump-tip a {
+            color: #c75b9a;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-box">
+        <h2>账号登录</h2>
+        <div class="form-item">
+            <label>手机号 / 邮箱</label>
+            <input type="text" id="login-account" placeholder="输入注册的手机号/邮箱">
+        </div>
+        <div class="form-item">
+            <label>登录密码</label>
+            <input type="password" id="login-pwd" placeholder="输入密码">
+        </div>
+        <div class="remember-row">
+            <input type="checkbox" id="remember-me">
+            <label for="remember-me">记住登录（7天）</label>
+        </div>
+        <button id="login-submit">登录</button>
+        <div class="jump-tip">没有账号？<a href="register.html">立即注册</a></div>
+    </div>
+
+<script>
+const oldToken = localStorage.getItem('token') || sessionStorage.getItem('token');
+if (oldToken) {
+    location.href = 'index.html';
+}
+
+const loginBtn = document.getElementById('login-submit');
+loginBtn.addEventListener('click', async function () {
+    const account = document.getElementById('login-account').value.trim();
+    const pwd = document.getElementById('login-pwd').value.trim();
+    const isRemember = document.getElementById('remember-me').checked;
+
+    if (!account || !pwd) {
+        alert('账号密码不能为空');
+        return;
+    }
+
+    try {
+        const res = await fetch('http://localhost:3001/api/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                account: account,
+                password: pwd
+            })
+        });
+        const result = await res.json();
+        if (result.code === 200) {
+            if (isRemember) {
+                localStorage.setItem('token', result.token);
+                localStorage.setItem('userId', result.userId);
+                localStorage.setItem('remember', '1');
+            } else {
+                sessionStorage.setItem('token', result.token);
+                sessionStorage.setItem('userId', result.userId);
+                localStorage.removeItem('remember');
+            }
+            alert('登录成功');
+            location.href = 'index.html';
+        } else {
+            alert(result.msg);
+        }
+    } catch (err) {
+        alert('后端未启动，请打开CMD运行node index.js');
+    }
+})
+</script>
+</body>
+</html>

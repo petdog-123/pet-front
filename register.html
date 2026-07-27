@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>宠物管理系统 - 账号注册</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft Yahei", sans-serif;
+        }
+        body {
+            background-color: #FFF0F8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .register-box {
+            width: 380px;
+            background: #ffffff;
+            padding: 35px 30px;
+            border-radius: 16px;
+            box-shadow: 0 4px 15px #f8d2e6;
+        }
+        h2 {
+            text-align: center;
+            color: #c75b9a;
+            margin-bottom: 26px;
+        }
+        .form-item {
+            margin-bottom: 18px;
+        }
+        .form-item label {
+            display: block;
+            font-size: 15px;
+            color: #444;
+            margin-bottom: 6px;
+        }
+        .form-item input {
+            width: 100%;
+            height: 42px;
+            padding: 0 14px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+        }
+        #reg-submit {
+            width: 100%;
+            height: 44px;
+            background-color: #c75b9a;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+        #reg-submit:hover {
+            background-color: #b04e87;
+        }
+        .jump-tip {
+            text-align: center;
+            margin-top: 16px;
+            font-size: 14px;
+            color: #666;
+        }
+        .jump-tip a {
+            color: #c75b9a;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="register-box">
+        <h2>新用户注册</h2>
+        <div class="form-item">
+            <label>手机号 / 邮箱</label>
+            <input type="text" id="reg-account" placeholder="请输入手机号或邮箱">
+        </div>
+        <div class="form-item">
+            <label>登录密码（最少6位）</label>
+            <input type="password" id="reg-pwd" placeholder="设置密码">
+        </div>
+        <div class="form-item">
+            <label>确认密码</label>
+            <input type="password" id="reg-pwd2" placeholder="再次填写密码">
+        </div>
+        <button id="reg-submit">完成注册</button>
+        <div class="jump-tip">已有账号？<a href="login.html">前往登录</a></div>
+    </div>
+
+<script>
+const submitBtn = document.getElementById('reg-submit');
+submitBtn.addEventListener('click', async function () {
+    const account = document.getElementById('reg-account').value.trim();
+    const pwd = document.getElementById('reg-pwd').value.trim();
+    const pwd2 = document.getElementById('reg-pwd2').value.trim();
+
+    if (!account || !pwd) {
+        alert('账号和密码不能为空');
+        return;
+    }
+    if (pwd !== pwd2) {
+        alert('两次输入的密码不一致');
+        return;
+    }
+    if (pwd.length < 6) {
+        alert('密码必须大于等于6位');
+        return;
+    }
+
+    try {
+        const res = await fetch('http://localhost:3001/api/register', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                account: account,
+                password: pwd
+            })
+        });
+        const result = await res.json();
+        if (result.code === 200) {
+            alert(result.msg);
+            location.href = 'login.html';
+        } else {
+            alert(result.msg);
+        }
+    } catch (error) {
+        alert('连接后端失败！请确认D盘pet-server内node index.js已经启动，命令窗口保持打开');
+    }
+})
+</script>
+</body>
+</html>
+
