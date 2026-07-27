@@ -4,8 +4,7 @@ let dogOriginList = [];
 const USER_ID = localStorage.getItem("userId") || sessionStorage.getItem("userId");
 const TOKEN = localStorage.getItem("token") || sessionStorage.getItem("token");
 // 后端固定端口3001，已经改好，不用手动改端口
-const BASE_API = "http://localhost:3001";
-
+const BASE_API = "https://pet-api-server-pjz846j00-pet14.vercel.app";
 // 绑定页面所有标签id，和你原来页面完全匹配，不用改网页
 const modal = document.getElementById('editModal')
 const closeModalBtn = document.getElementById('closeModal')
